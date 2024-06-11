@@ -15,11 +15,43 @@ input {
     width: 350px;
     margin-left: 209px;
     margin-right: 75%;
-    
 }
 
 input:focus { 
     outline: none;
+}
+
+.inputs {
+    padding-top: 18px;
+}
+
+#password, #username {
+    margin-top: 40px;
+}
+
+.Placeholders {
+    position: absolute;
+    font-size: 25px;
+}
+
+#username_label, #password_label {
+    pointer-events: none;
+    margin-left: 220px;
+    padding-bottom: 20px;
+    transform: translateY(-130px);
+    color: #757575;
+}
+
+#username_label.foccus {
+    transform: translateY(-170px);
+    color: var(--text);
+    transition: 0.5s;
+}
+
+#password_label.foccus {
+    transform: translateY(-170px);
+    color: var(--text);
+    transition: 0.5s;
 }
 
 #create {
@@ -27,12 +59,8 @@ input:focus {
 }
 
 .create {
-    padding-top: 230px;
+    padding-top: 18px;
     padding-left: 10px;
-}
-
-button {
-    
 }
 
 .Signup {

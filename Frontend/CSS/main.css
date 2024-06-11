@@ -9,6 +9,10 @@
     --accent: hsl(0, 0%, 91%);
 }
 
+* {
+    user-select: none;
+}
+
 body {
     background-color: var(--background);
 }
@@ -50,7 +54,6 @@ button:active {
 }
 
 p {
-    user-select: none;
     font-family: 'Ubuntu', sans-serif;
     color: var(--text);
 }
