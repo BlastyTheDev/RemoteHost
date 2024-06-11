@@ -48,3 +48,8 @@ button:active {
 .hidden {
     display: none;
 }
+
+p {
+    user-select: none;
+    color: var(--text);
+}

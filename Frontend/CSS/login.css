@@ -23,7 +23,6 @@ input:focus {
 }
 
 #create {
-    color: var(--text);
     font-family: 'Ubuntu', sans-serif;
     text-align: left;
     transform: translate(10px, 190px);
@@ -31,4 +30,19 @@ input:focus {
 
 button {
     transform: translate(10px, 190px);
+}
+
+.Signup {
+    width: 768px;
+    height: 458px;
+    background-color: var(--secondary-background);
+    text-align: center;
+    margin: auto;
+    margin-top: 25vh;
+    border-radius: 25px;
+}
+
+#cancel {
+    float: left;
+    padding-left: 10px;
 }
