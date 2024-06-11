@@ -23,13 +23,16 @@ input:focus {
 }
 
 #create {
-    font-family: 'Ubuntu', sans-serif;
-    text-align: left;
-    transform: translate(10px, 190px);
+    float: left;
+}
+
+.create {
+    padding-top: 230px;
+    padding-left: 10px;
 }
 
 button {
-    transform: translate(10px, 190px);
+    
 }
 
 .Signup {

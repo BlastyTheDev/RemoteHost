@@ -51,5 +51,6 @@ button:active {
 
 p {
     user-select: none;
+    font-family: 'Ubuntu', sans-serif;
     color: var(--text);
 }
