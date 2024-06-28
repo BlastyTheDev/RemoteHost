@@ -25,7 +25,7 @@ public class JWTService {
         return Keys.hmacShaKeyFor(bytes);
     }
 
-    public String generateJWT(Map<String, Object> extraClaims, UserDetails userDetails) {
+    public String createToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         // expire in 30 days (last number in multiplication is number of days in the future)
         Date expiration = new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 30);
         return Jwts.builder()
@@ -37,8 +37,8 @@ public class JWTService {
                 .compact();
     }
 
-    public String generateJWT(UserDetails userDetails) {
-        return generateJWT(Map.of(), userDetails);
+    public String createToken(UserDetails userDetails) {
+        return createToken(Map.of(), userDetails);
     }
 
     public String getSubject(String jwt) {

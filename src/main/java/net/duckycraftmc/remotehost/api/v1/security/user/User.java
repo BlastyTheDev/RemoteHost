@@ -1,4 +1,4 @@
-package net.duckycraftmc.remotehost.api.v1.security;
+package net.duckycraftmc.remotehost.api.v1.security.user;
 
 import jakarta.persistence.*;
 import lombok.Builder;
