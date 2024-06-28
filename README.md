@@ -1,5 +1,8 @@
 # RemoteHost
 
+### (context for anyone from hackclub reading this)
+## This is intended to be a backend to host Minecraft servers and an SQL database to manage accounts, etc.. The rest of this README was pasted from a private Google Docs document. The planning concluded on 24 February 2024 and we have ever since forgotten about this until early June. The original planned completion day was 24 June this year
+
 Completion Date:
 
 Jun 24, 2024 12:00 PM
