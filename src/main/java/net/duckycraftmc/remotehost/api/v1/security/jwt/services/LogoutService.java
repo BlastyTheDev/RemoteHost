@@ -3,6 +3,7 @@ package net.duckycraftmc.remotehost.api.v1.security.jwt.services;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import net.duckycraftmc.remotehost.api.v1.security.token.TokenRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LogoutService implements LogoutHandler {
 
+    private final TokenRepository tokenRepository;
+
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         final String authHeader = request.getHeader("Authorization");
@@ -18,7 +21,7 @@ public class LogoutService implements LogoutHandler {
             return;
 
         String jwt = authHeader.split(" ")[1].trim();
-        // implement revoking of tokens in SQL database
+        tokenRepository.findByValue(jwt).ifPresent(tokenRepository::delete);
     }
 
 }
