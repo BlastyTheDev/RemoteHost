@@ -25,6 +25,7 @@ public class SecurityConfig {
     private final LogoutHandler logoutHandler;
 
     private final String[] needAuthentication = {
+            "/api/v1/discord/verify",
     };
 
     private final String[] needAdmin = {
