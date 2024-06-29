@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 public class LogoutService implements LogoutHandler {
 
     private final TokenRepository tokenRepository;
+    private final JWTService jwtService;
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
@@ -22,6 +23,7 @@ public class LogoutService implements LogoutHandler {
 
         String jwt = authHeader.split(" ")[1].trim();
         tokenRepository.findByValue(jwt).ifPresent(tokenRepository::delete);
+        jwtService.purgeExpiredTokens();
     }
 
 }

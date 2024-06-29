@@ -40,7 +40,8 @@ public class AuthController {
                 .username(signupRequest.getUsername())
                 .password(passwordEncoder.encode(signupRequest.getPassword()))
                 .discord(signupRequest.getDiscord())
-                .tier(AccountTier.BASIC)
+                .discordVerified(false)
+                .tier(AccountTier.UNVERIFIED)
                 .build();
         sendNewToken(userRepository.save(user), response);
     }

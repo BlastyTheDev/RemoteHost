@@ -25,6 +25,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
     private String discord;
+    @Column(name = "discord_verified", nullable = false)
+    private Boolean discordVerified;
     @Column(nullable = false)
     private AccountTier tier;
 
