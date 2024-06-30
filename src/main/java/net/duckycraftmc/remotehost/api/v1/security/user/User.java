@@ -28,6 +28,7 @@ public class User implements UserDetails {
     @Column(name = "discord_verified", nullable = false)
     private Boolean discordVerified;
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private AccountTier tier;
 
     @Override
