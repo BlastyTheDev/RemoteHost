@@ -31,6 +31,10 @@ public class AccountController {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             return;
         }
+        if (!user.getDiscordVerified()) {
+            response.setStatus(HttpServletResponse.SC_NOT_ACCEPTABLE);
+            return;
+        }
         Optional<AccountKey> keyOptional = keyRepository.findByValue(key);
         if (keyOptional.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
