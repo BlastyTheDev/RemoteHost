@@ -31,7 +31,7 @@ public class MinecraftServer {
     private MinecraftServerType serverType;
     @Column(name = "owner_id", nullable = false)
     private Integer ownerId;
-    @Column(name = "collaborators", nullable = false)
+    @Column(name = "collaborators")
     private String collaborators; // format: "id1,id2,id3"
 
     public List<User> getCollaborators(UserRepository userRepository) {

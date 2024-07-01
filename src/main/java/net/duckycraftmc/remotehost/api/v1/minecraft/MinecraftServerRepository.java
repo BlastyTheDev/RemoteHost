@@ -12,7 +12,7 @@ public interface MinecraftServerRepository extends JpaRepository<MinecraftServer
     @Query(value = "select * from `minecraft_servers` where name = :name", nativeQuery = true)
     Optional<MinecraftServer> findByName(String name);
 
-    @Query(value = "select * from `minecraft_servers` where owner = :ownerId", nativeQuery = true)
+    @Query(value = "select * from `minecraft_servers` where owner_id = :ownerId", nativeQuery = true)
     List<MinecraftServer> findAllByOwnerId(Integer ownerId);
 
 }
