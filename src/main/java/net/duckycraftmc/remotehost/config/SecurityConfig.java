@@ -27,6 +27,8 @@ public class SecurityConfig {
     private final String[] needAuthentication = {
             "/api/v1/discord/verify",
             "/api/v1/account/add-key",
+            "/api/v1/minecraft",
+            "/api/v1/minecraft/**",
     };
 
     private final String[] needAdmin = {

@@ -1,4 +1,4 @@
-package net.duckycraftmc.remotehost.servers.minecraft.util;
+package net.duckycraftmc.remotehost.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +13,7 @@ import java.net.http.HttpResponse;
 
 public class DownloadServerJar {
 
-    public static void downloadFromPaperAPI(String software, String version, int build) throws IOException, InterruptedException {
+    public static void downloadFromPaperAPI(String software, String version, String build) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest downloadRequest = HttpRequest.newBuilder()
@@ -31,7 +31,7 @@ public class DownloadServerJar {
         downloadFromPaperAPI(software, version, getLatestPaperAPIBuild(software, version));
     }
 
-    private static int getLatestPaperAPIBuild(String software, String version) throws IOException, InterruptedException {
+    private static String getLatestPaperAPIBuild(String software, String version) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper mapper = new ObjectMapper();
         HttpRequest versionsRequest = HttpRequest.newBuilder()
@@ -43,7 +43,37 @@ public class DownloadServerJar {
         JsonNode buildsNode = mapper.readValue(versionsResponse.body(), JsonNode.class);
         String rawBuildNumbers = buildsNode.get("builds").toString();
         String[] buildNumbers = rawBuildNumbers.substring(1, rawBuildNumbers.length() - 1).split(",");
-        return Integer.parseInt(buildNumbers[buildNumbers.length - 1]);
+        return buildNumbers[buildNumbers.length - 1];
+    }
+
+    public static void downloadPurpur(String version, String build) throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest downloadRequest = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.purpurmc.org/v2/purpur/" + version + "/" + build + "/download"))
+                .GET()
+                .headers("accept", "application/json")
+                .build();
+
+        byte[] downloadBytes = client.send(downloadRequest, HttpResponse.BodyHandlers.ofByteArray()).body();
+        writeToFile(downloadBytes, "purpur-" + version + "-" + build + ".jar");
+    }
+
+    public static void downloadPurpur(String version) throws IOException, InterruptedException {
+        downloadPurpur(version, getLatestPurpurBuild(version));
+    }
+
+    private static String getLatestPurpurBuild(String version) throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        ObjectMapper mapper = new ObjectMapper();
+        HttpRequest versionsRequest = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.purpurmc.org/v2/purpur/" + version))
+                .GET()
+                .headers("accept", "*/*")
+                .build();
+        HttpResponse<String> versionsResponse = client.send(versionsRequest, HttpResponse.BodyHandlers.ofString());
+        JsonNode buildsNode = mapper.readValue(versionsResponse.body(), JsonNode.class);
+        return buildsNode.get("builds").get("latest").asText();
     }
 
     private static void writeToFile(byte[] bytes, String pathname) throws IOException {
