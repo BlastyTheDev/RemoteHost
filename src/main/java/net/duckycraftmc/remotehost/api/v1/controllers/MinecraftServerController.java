@@ -9,7 +9,6 @@ import net.duckycraftmc.remotehost.api.v1.minecraft.MinecraftServerRepository;
 import net.duckycraftmc.remotehost.api.v1.minecraft.MinecraftServerType;
 import net.duckycraftmc.remotehost.api.v1.security.user.AccountTier;
 import net.duckycraftmc.remotehost.api.v1.security.user.User;
-import net.duckycraftmc.remotehost.api.v1.security.user.UserRepository;
 import net.duckycraftmc.remotehost.api.v1.security.user.quotas.UsageQuota;
 import net.duckycraftmc.remotehost.util.DownloadServerJar;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,7 +25,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class MinecraftServerController {
 
-    private final UserRepository userRepository;
     private final MinecraftServerRepository serverRepository;
 
     @PostMapping("/create")
@@ -78,11 +76,11 @@ public class MinecraftServerController {
 
         File serverDir = new File("servers/" + server.getId());
         if (!serverDir.exists())
-            serverDir.mkdir();
+            serverDir.mkdirs();
 
         switch (server.getServerType()) {
-            case PAPER -> DownloadServerJar.downloadFromPaperAPI(serverDir.toPath(), "papermc", createRequest.getVersion(), createRequest.getBuild());
-            case PURPUR -> DownloadServerJar.downloadPurpur(serverDir.toPath(), createRequest.getVersion(), createRequest.getBuild());
+            case PAPER -> DownloadServerJar.downloadFromPaperAPI(serverDir, "paper", createRequest.getVersion(), createRequest.getBuild());
+            case PURPUR -> DownloadServerJar.downloadPurpur(serverDir, createRequest.getVersion(), createRequest.getBuild());
         }
 
         return server;

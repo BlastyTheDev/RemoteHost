@@ -10,11 +10,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Path;
 
 public class DownloadServerJar {
 
-    public static void downloadFromPaperAPI(Path path, String software, String version, String build) throws IOException, InterruptedException {
+    public static void downloadFromPaperAPI(File parentPath, String software, String version, String build) throws IOException, InterruptedException {
         if (build == null || build.isBlank())
             build = getLatestPaperAPIBuild(software, version);
 
@@ -28,7 +27,7 @@ public class DownloadServerJar {
                 .build();
 
         byte[] downloadBytes = client.send(downloadRequest, HttpResponse.BodyHandlers.ofString()).body().getBytes();
-        writeToFile(downloadBytes, path + software + "-" + version + "-" + build + ".jar");
+        writeToFile(downloadBytes, parentPath, software + "-" + version + "-" + build + ".jar");
     }
 
     private static String getLatestPaperAPIBuild(String software, String version) throws IOException, InterruptedException {
@@ -46,8 +45,8 @@ public class DownloadServerJar {
         return buildNumbers[buildNumbers.length - 1];
     }
 
-    public static void downloadPurpur(Path path, String version, String build) throws IOException, InterruptedException {
-        if (build.isBlank())
+    public static void downloadPurpur(File parentPath, String version, String build) throws IOException, InterruptedException {
+        if (build == null || build.isBlank())
             build = getLatestPurpurBuild(version);
 
         HttpClient client = HttpClient.newHttpClient();
@@ -59,7 +58,7 @@ public class DownloadServerJar {
                 .build();
 
         byte[] downloadBytes = client.send(downloadRequest, HttpResponse.BodyHandlers.ofByteArray()).body();
-        writeToFile(downloadBytes, path + "purpur-" + version + "-" + build + ".jar");
+        writeToFile(downloadBytes, parentPath, "purpur-" + version + "-" + build + ".jar");
     }
 
     private static String getLatestPurpurBuild(String version) throws IOException, InterruptedException {
@@ -75,8 +74,8 @@ public class DownloadServerJar {
         return buildsNode.get("builds").get("latest").asText();
     }
 
-    private static void writeToFile(byte[] bytes, String pathname) throws IOException {
-        File file = new File(pathname);
+    private static void writeToFile(byte[] bytes, File parentPath, String fileName) throws IOException {
+        File file = new File(parentPath, fileName);
         FileOutputStream fos = new FileOutputStream(file);
         fos.write(bytes);
     }
