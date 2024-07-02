@@ -28,14 +28,18 @@ public class AuthController {
     private final AuthenticationManager authManager;
 
     @PostMapping("/login")
-    public void login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
+    public String login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
         authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
         User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow();
-        sendNewToken(user, response);
+        return sendNewToken(user);
     }
 
     @PostMapping("/signup")
-    public void signup(@RequestBody SignupRequest signupRequest, HttpServletRequest request, HttpServletResponse response) {
+    public String signup(@RequestBody SignupRequest signupRequest, HttpServletRequest request, HttpServletResponse response) {
+        if (userRepository.findByUsername(signupRequest.getUsername()).isPresent()) {
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            return null;
+        }
         User user = User.builder()
                 .username(signupRequest.getUsername())
                 .password(passwordEncoder.encode(signupRequest.getPassword()))
@@ -43,12 +47,12 @@ public class AuthController {
                 .discordVerified(false)
                 .tier(AccountTier.UNVERIFIED)
                 .build();
-        sendNewToken(userRepository.save(user), response);
+        response.setStatus(HttpServletResponse.SC_CREATED);
+        return sendNewToken(userRepository.save(user));
     }
 
-    private void sendNewToken(User user, HttpServletResponse response) {
-        String jwt = jwtService.createToken(user);
-        response.addHeader("Authorization", "Bearer " + jwt);
+    private String sendNewToken(User user) {
+        return jwtService.createToken(user);
     }
 
 }

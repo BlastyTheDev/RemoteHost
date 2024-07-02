@@ -46,4 +46,8 @@ public class MinecraftServer {
         collaborators += "," + collaborator.getId();
     }
 
+    public void removeCollaborator(User collaborator) {
+        collaborators = collaborators.replace("," + collaborator.getId(), "");
+    }
+
 }

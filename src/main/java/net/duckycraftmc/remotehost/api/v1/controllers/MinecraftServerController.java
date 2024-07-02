@@ -35,6 +35,11 @@ public class MinecraftServerController {
             return null;
         }
 
+        if (serverRepository.findByName(createRequest.getName()).isPresent()) {
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            return null;
+        }
+
         // check usage quotas
         // not final; subject to change in the future
         UsageQuota quota = UsageQuota.getInstance().getQuotas(user.getTier());
