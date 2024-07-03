@@ -9,16 +9,14 @@ import net.duckycraftmc.remotehost.api.v1.minecraft.MinecraftServerRepository;
 import net.duckycraftmc.remotehost.api.v1.minecraft.MinecraftServerType;
 import net.duckycraftmc.remotehost.api.v1.security.user.AccountTier;
 import net.duckycraftmc.remotehost.api.v1.security.user.User;
+import net.duckycraftmc.remotehost.api.v1.security.user.UserRepository;
 import net.duckycraftmc.remotehost.api.v1.security.user.quotas.UsageQuota;
 import net.duckycraftmc.remotehost.util.DownloadServerJar;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/minecraft")
@@ -26,6 +24,7 @@ import java.io.IOException;
 public class MinecraftServerController {
 
     private final MinecraftServerRepository serverRepository;
+    private final UserRepository userRepository;
 
     @PostMapping("/create")
     public MinecraftServer createServer(@RequestBody CreateRequest createRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
@@ -43,7 +42,7 @@ public class MinecraftServerController {
         // check usage quotas
         // not final; subject to change in the future
         UsageQuota quota = UsageQuota.getInstance().getQuotas(user.getTier());
-        
+
         int userServerCount = serverRepository.findAllByOwnerId(user.getId()).size();
         AccountTier userTier = user.getTier();
         if (userTier != AccountTier.ADMIN) {
@@ -83,12 +82,65 @@ public class MinecraftServerController {
         if (!serverDir.exists())
             serverDir.mkdirs();
 
+        String serverJarName = "";
+
         switch (server.getServerType()) {
-            case PAPER -> DownloadServerJar.downloadFromPaperAPI(serverDir, "paper", createRequest.getVersion(), createRequest.getBuild());
-            case PURPUR -> DownloadServerJar.downloadPurpur(serverDir, createRequest.getVersion(), createRequest.getBuild());
+            case PAPER ->
+                    serverJarName = DownloadServerJar.downloadFromPaperAPI(serverDir, "paper", createRequest.getVersion(), createRequest.getBuild());
+            case PURPUR ->
+                    serverJarName = DownloadServerJar.downloadPurpur(serverDir, createRequest.getVersion(), createRequest.getBuild());
         }
 
+        File startScript = new File(serverDir, "start.sh");
+        startScript.createNewFile();
+
+        String startScriptContent = "#!/bin/bash\n" +
+                "java -Xmx" + server.getRam() + "M -jar " + serverJarName + " nogui";
+
+        FileOutputStream fos = new FileOutputStream(startScript);
+        fos.write(startScriptContent.getBytes());
+
         return server;
+    }
+
+    @RequestMapping("/start")
+    public void startServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
+        if (server == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        if (!Objects.equals(server.getOwnerId(), user.getId()) && !server.getCoOwners(userRepository).contains(user)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        ProcessBuilder pb = new ProcessBuilder("bash", "start.sh");
+        pb.directory(new File("servers/" + serverId));
+        Process process = pb.start();
+
+        // debug, makes sure program stays running
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        new Thread(() -> {
+            String line;
+            try {
+                while ((line = reader.readLine()) != null)
+                    System.out.println(line);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+        new Thread(() -> {
+            String line;
+            try {
+                while ((line = errorReader.readLine()) != null)
+                    System.err.println(line);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
     }
 
 }

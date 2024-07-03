@@ -13,7 +13,7 @@ import java.net.http.HttpResponse;
 
 public class DownloadServerJar {
 
-    public static void downloadFromPaperAPI(File parentPath, String software, String version, String build) throws IOException, InterruptedException {
+    public static String downloadFromPaperAPI(File parentPath, String software, String version, String build) throws IOException, InterruptedException {
         if (build == null || build.isBlank())
             build = getLatestPaperAPIBuild(software, version);
 
@@ -26,8 +26,11 @@ public class DownloadServerJar {
                 .headers("accept", "application/json")
                 .build();
 
+        // does not download properly
         byte[] downloadBytes = client.send(downloadRequest, HttpResponse.BodyHandlers.ofString()).body().getBytes();
-        writeToFile(downloadBytes, parentPath, software + "-" + version + "-" + build + ".jar");
+        String jarName = software + "-" + version + "-" + build + ".jar";
+        writeToFile(downloadBytes, parentPath, jarName);
+        return jarName;
     }
 
     private static String getLatestPaperAPIBuild(String software, String version) throws IOException, InterruptedException {
@@ -45,7 +48,7 @@ public class DownloadServerJar {
         return buildNumbers[buildNumbers.length - 1];
     }
 
-    public static void downloadPurpur(File parentPath, String version, String build) throws IOException, InterruptedException {
+    public static String downloadPurpur(File parentPath, String version, String build) throws IOException, InterruptedException {
         if (build == null || build.isBlank())
             build = getLatestPurpurBuild(version);
 
@@ -58,7 +61,9 @@ public class DownloadServerJar {
                 .build();
 
         byte[] downloadBytes = client.send(downloadRequest, HttpResponse.BodyHandlers.ofByteArray()).body();
-        writeToFile(downloadBytes, parentPath, "purpur-" + version + "-" + build + ".jar");
+        String jarName = "purpur-" + version + "-" + build + ".jar";
+        writeToFile(downloadBytes, parentPath, jarName);
+        return jarName;
     }
 
     private static String getLatestPurpurBuild(String version) throws IOException, InterruptedException {

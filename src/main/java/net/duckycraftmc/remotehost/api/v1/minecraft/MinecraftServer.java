@@ -34,7 +34,7 @@ public class MinecraftServer {
     @Column(name = "collaborators")
     private String collaborators; // format: "id1,id2,id3"
 
-    public List<User> getCollaborators(UserRepository userRepository) {
+    public List<User> getCoOwners(UserRepository userRepository) {
         String[] collaboratorIds = collaborators.split(",");
         List<User> users = new ArrayList<>();
         for (String collaboratorId : collaboratorIds)
@@ -42,11 +42,11 @@ public class MinecraftServer {
         return users;
     }
 
-    public void addCollaborator(User collaborator) {
+    public void addCoOwner(User collaborator) {
         collaborators += "," + collaborator.getId();
     }
 
-    public void removeCollaborator(User collaborator) {
+    public void removeCoOwner(User collaborator) {
         collaborators = collaborators.replace("," + collaborator.getId(), "");
     }
 
