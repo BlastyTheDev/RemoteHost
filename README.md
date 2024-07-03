@@ -1,70 +1,30 @@
-# RemoteHost
+# RemoteHost (WIP)
 
 ### (context for anyone from hackclub reading this)
-## This is intended to be a backend to host Minecraft servers and an SQL database to manage accounts, etc.. The rest of this README was pasted from a private Google Docs document. The planning concluded on 24 February 2024 and we have ever since forgotten about this until early June. The original planned completion day was 24 June this year
+This is intended to be a backend to host Minecraft servers and an SQL database to manage accounts, etc.. The planning for this project concluded on 24 February 2024 and we have ever since forgotten about this until early June. The original planned completion day was 24 June this year
 
-Completion Date:
-
-Jun 24, 2024 12:00 PM
-
-Timetable:
-
-Duckycraft Season 10 - PLANS
-Today i died of death and my respawn is scheduled for 24/06/2024
-
-
-Repository:
-https://github.com/BlastyTheDev/RemoteHost
-
-
-Features:
-    A secure login system
-    Website
-    Login Page
-    Dashboard
-    Server Control Panel (incl console, etc)
-    Servers Page
-    Navbars
-    Account management
-        Staff View:
-    Admin View Toggle Button
-    Admin Dashboard (all server stats combined and stuff)
-    Admin Servers page (all servers section below owned servers section)
-    Admin Accounts page (list all existing accounts and edit button)
-    Host machine system information
-    Host machine actions (eg port forwarding)
-    Emergency buttons (shutdown, server shutdown, website restart, etc..)
-    Account Privileges (tiers/permission levels) (click)
-    uPnP/Auto Port Forwarding (click)
-    Die of death
-    Procrastination machine
-
-
-Privileges:
-    Undetermined
-
-Requirements: 
-    UPnP Portmapper: https://github.com/kaklakariada/portmapper
-    Spring Boot
-    Modrinth & Curseforge API
-    Paper API
-    SQL
-
-
-Functional Requirements Of The Back End:
-
-    Secure authentication system
-    Discord integration
-    Account management system
-    Account privilege system
-    View host machine loads
-    Create minecraft servers (java processes)
-    Run minecraft servers (java processes)
-    Download files
-    Upload files
-    Explore files (create, delete, etc..)\
-    Frontend independent of the main backend
-
-
-
-
+### Features
+- Token Authentication using Json Web Token (JWT)
+- (Under development) API and Website/Webapp for Creation and Management of Minecraft Servers including:
+    - Creation, Modification, Deletion, etc..
+    - Automatic Server Jar Downloading
+    - (Planned) Modrinth and Curseforge API for users to add plugins/mods/datapacks to their servers
+- (Under development) More advanced access for admin accounts:
+    - Ability to see and modify users
+    - Ability to view all existing servers
+    - Ability to view host machine load
+- (Under development) User accounts able to create/modify servers depending on their "tier" and owner/co-owner status
+    - Start/Stop/Restart servers
+    - See and run commands in server console
+    - See and change server whitelist
+    - See and change server plugin/mod configurations
+    - Add and remove users as co-owners (collaborators)
+- (Under development) Currently available server/proxy types (Still in development, not ready to ship):
+    - Server Softwares
+        - Paper (all versions and builds available on https://papermc.io/downloads/all)
+        - Purpur (all versions and builds available on https://papermc.io/downloads/all)
+    - Proxy Softwares
+        - Velocity (all versions and builds available on https://papermc.io/downloads/all)
+        - Waterfall (not yet implemented, will have all versions and builds available on https://papermc.io/downloads/all)
+- Discord Bot for user verification
+    - `RemoteHost` is intended for private use within known people who are in a Discord server. Discord user verification is intended make only Discord server members capable of receiving any account privileges
