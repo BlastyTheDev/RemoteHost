@@ -3,6 +3,11 @@
 ### (context for anyone from hackclub reading this)
 This is intended to be a backend to host Minecraft servers and an SQL database to manage accounts, etc.. The planning for this project concluded on 24 February 2024 and we have ever since forgotten about this until early June. The original planned completion day was 24 June this year
 
+### Notes
+- The `RemoteHost` API is written in Java using Spring Boot.
+- `RemoteHost` is written for Linux support. Windows support is currently not planned.
+- The frontend is currently being written in plain HTML5, JS, and CSS. It is planned to be redesigned and rewritten using NextJS, after completion.
+
 ### Features
 - Token Authentication using Json Web Token (JWT)
 - (Under development) API and Website/Webapp for Creation and Management of Minecraft Servers including:
@@ -23,7 +28,7 @@ This is intended to be a backend to host Minecraft servers and an SQL database t
     - Server Softwares
         - Paper (all versions and builds available on https://papermc.io/downloads/all)
         - Purpur (all versions and builds available on https://papermc.io/downloads/all)
-    - Proxy Softwares
+    - Proxy Softwares (Not Yet Implemented)
         - Velocity (all versions and builds available on https://papermc.io/downloads/all)
         - Waterfall (not yet implemented, will have all versions and builds available on https://papermc.io/downloads/all)
 - Discord Bot for user verification
