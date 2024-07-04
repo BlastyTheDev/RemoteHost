@@ -76,3 +76,7 @@ input {
 .viewed {
     color: #8f8f8f;
 }
+
+.step {
+    color: var(--secondary-text);
+}
