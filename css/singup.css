@@ -51,6 +51,7 @@ p.five {
     top: 150px;
     left: calc(50% - 125px);
     width: 245px;
+    color: inherit;
 }
 
 input {
