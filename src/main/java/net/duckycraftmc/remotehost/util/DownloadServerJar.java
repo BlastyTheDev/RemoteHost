@@ -10,6 +10,9 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 public class DownloadServerJar {
 
@@ -17,19 +20,13 @@ public class DownloadServerJar {
         if (build == null || build.isBlank())
             build = getLatestPaperAPIBuild(software, version);
 
-        HttpClient client = HttpClient.newHttpClient();
-
-        HttpRequest downloadRequest = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.papermc.io/v2/projects/" + software + "/versions/" + version + "/builds/"
-                        + build + "/downloads/" + software + "-" + version + "-" + build + ".jar"))
-                .GET()
-                .headers("accept", "application/json")
-                .build();
-
-        // does not download properly
-        byte[] downloadBytes = client.send(downloadRequest, HttpResponse.BodyHandlers.ofString()).body().getBytes();
         String jarName = software + "-" + version + "-" + build + ".jar";
-        writeToFile(downloadBytes, parentPath, jarName);
+
+        // writeToFile() does not work correctly for paper downloads
+        Files.copy(URI.create("https://api.papermc.io/v2/projects/" + software + "/versions/" + version + "/builds/"
+                + build + "/downloads/" + software + "-" + version + "-" + build + ".jar").toURL().openStream(),
+                Paths.get(parentPath.getPath() + "/" + jarName), StandardCopyOption.REPLACE_EXISTING);
+
         return jarName;
     }
 
