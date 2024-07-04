@@ -1,7 +1,5 @@
 # RemoteHost (WIP)
 
-# Note that this is a working environment for the front end so the backend has been moved to another folder
-
 ### (context for anyone from hackclub reading this)
 This is intended to be a backend to host Minecraft servers and an SQL database to manage accounts, etc.. The planning for this project concluded on 24 February 2024 and we have ever since forgotten about this until early June. The original planned completion day was 24 June this year
 
