@@ -2,11 +2,9 @@ package net.duckycraftmc.remotehost.api.v1.controllers;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.duckycraftmc.remotehost.api.v1.minecraft.CreateRequest;
-import net.duckycraftmc.remotehost.api.v1.minecraft.MinecraftServer;
-import net.duckycraftmc.remotehost.api.v1.minecraft.MinecraftServerRepository;
-import net.duckycraftmc.remotehost.api.v1.minecraft.MinecraftServerType;
+import net.duckycraftmc.remotehost.api.v1.minecraft.*;
 import net.duckycraftmc.remotehost.api.v1.security.user.AccountTier;
 import net.duckycraftmc.remotehost.api.v1.security.user.User;
 import net.duckycraftmc.remotehost.api.v1.security.user.UserRepository;
@@ -16,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -25,6 +25,17 @@ public class MinecraftServerController {
 
     private final MinecraftServerRepository serverRepository;
     private final UserRepository userRepository;
+
+    @Getter
+    private final List<RunningMinecraftServer> servers = new ArrayList<>();
+
+    @GetMapping("/list-running")
+    public List<MinecraftServer> listRunningServers() {
+        List<MinecraftServer> running = new ArrayList<>();
+        for (RunningMinecraftServer server : servers)
+            running.add(server.getServer());
+        return running;
+    }
 
     @PostMapping("/create")
     public MinecraftServer createServer(@RequestBody CreateRequest createRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
@@ -103,44 +114,69 @@ public class MinecraftServerController {
         return server;
     }
 
-    @RequestMapping("/start")
-    public void startServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    @PostMapping("/start")
+    public void startServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         MinecraftServer server = serverRepository.findById(serverId).orElse(null);
         if (server == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        if (!Objects.equals(server.getOwnerId(), user.getId()) && !server.getCoOwners(userRepository).contains(user)) {
+        if (!isUserOwnerOrCoOwner(user, server)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
-        ProcessBuilder pb = new ProcessBuilder("bash", "start.sh");
-        pb.directory(new File("servers/" + serverId));
-        Process process = pb.start();
+        servers.add(new RunningMinecraftServer(server).start());
+    }
 
-        // debug, makes sure program stays running
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-        new Thread(() -> {
-            String line;
-            try {
-                while ((line = reader.readLine()) != null)
-                    System.out.println(line);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }).start();
-        new Thread(() -> {
-            String line;
-            try {
-                while ((line = errorReader.readLine()) != null)
-                    System.err.println(line);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }).start();
+    @PostMapping("/send-command")
+    public void sendCommand(@RequestParam(name = "server") Integer serverId, @RequestBody String command, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
+        if (server == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        if (!isUserOwnerOrCoOwner(user, server)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        RunningMinecraftServer runningServer = servers.stream().filter(s -> s.getServer().getId().equals(serverId)).findFirst().orElse(null);
+        if (runningServer == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        runningServer.sendCommand(command);
+    }
+
+    @PostMapping("/stop")
+    public void stopServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
+        if (server == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        if (!isUserOwnerOrCoOwner(user, server)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        RunningMinecraftServer runningServer = servers.stream().filter(s -> s.getServer().getId().equals(serverId)).findFirst().orElse(null);
+        if (runningServer == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        runningServer.stop();
+        servers.remove(runningServer);
+    }
+
+    private boolean isUserOwnerOrCoOwner(User user, MinecraftServer server) {
+        return Objects.equals(server.getOwnerId(), user.getId()) || server.getCoOwners(userRepository).contains(user);
     }
 
 }

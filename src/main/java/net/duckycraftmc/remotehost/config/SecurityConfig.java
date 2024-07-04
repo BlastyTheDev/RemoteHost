@@ -33,6 +33,7 @@ public class SecurityConfig {
 
     private final String[] needAdmin = {
             "/api/v1/admin/**",
+            "/api/v1/minecraft/list-running",
     };
 
     @Bean
