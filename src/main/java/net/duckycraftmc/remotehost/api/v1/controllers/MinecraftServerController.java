@@ -115,7 +115,7 @@ public class MinecraftServerController {
     }
 
     @PostMapping("/start")
-    public void startServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
+    public void startServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         MinecraftServer server = serverRepository.findById(serverId).orElse(null);
         if (server == null) {
