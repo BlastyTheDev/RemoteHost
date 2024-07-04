@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign-Up</title>
+    <link rel="stylesheet" href="../css/singup.css">
+</head>
+<body>
+    <div class="main">
+        <a href="login.html">cancel</a>
+        <h1>Sign-Up</h1>
+        <div id="one" class="step one">
+            <p>Enter a username</p> <br>
+            <input type="text" class="inputs" placeholder="Username">
+            <button class="Next">Next</button>
+        </div>
+        <div id="two" class="setp two hidden">
+            <button class="Back">Back</button>
+            <p>Create a secure password</p>
+            <div class="inputs">
+                <input type="password" placeholder="Password"><br><br>
+                <input type="password" placeholder="Confirm password">
+            </div>
+            <button class="Next">Next</button>
+        </div>
+        <div id="three" class="step three hidden"> 
+            <button class="Back">Back</button>
+            <p>Enter your contact info</p>
+            <input class="inputs" type="text" placeholder="Discord">
+            <button class="Next">Confirm</button>
+        </div>
+        <div id="four" class="step four hidden">
+            <button class="Back">Back</button>
+            <p class="four">Waiting on contact<br>infomation confomation<br><br><br>...</p>
+            <button class="Next">Next</button>
+        </div>
+        <div id="five" class="step five hidden">
+            <button class="Back">Back</button>
+            <p class="five"><br><br>Your all done!</p>
+            <button class="Next">Finish</button>
+        </div>
+        <div class="steps material-symbols-outlined">
+            <span id="1">radio_button_checked</span>
+            <span id="2">radio_button_unchecked</span>
+            <span id="3">radio_button_unchecked</span>
+            <span id="4">radio_button_unchecked</span>
+        </div>
+    </div>
+    <script src="../js/signup-logic.js"></script>
+</body>
+</html>
