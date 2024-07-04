@@ -8,7 +8,6 @@ import java.util.Optional;
 
 public interface MinecraftServerRepository extends JpaRepository<MinecraftServer, Integer> {
 
-    // TODO: This is vulnerable to SQL injection. This should be dealt with before production
     @Query(value = "select * from `minecraft_servers` where name = :name", nativeQuery = true)
     Optional<MinecraftServer> findByName(String name);
 
