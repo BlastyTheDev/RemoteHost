@@ -1,0 +1,97 @@
+@import url(main.css);
+
+body {
+    background-color: var(--background);
+}
+
+h1 {
+    color: var(--text);
+    font-size: 35px;
+    font-family: 'Ubuntu';
+}
+
+.login {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    background-color: var(--secondary-background);
+    border-radius: 10px;
+    padding: 10px;
+    width: 500px;
+    text-align: center;
+    height: 300px;
+    font-size: 20px;
+}
+
+i {
+    position: absolute;
+    transform: translate(-250px, 5px);
+    user-select: none;
+    pointer-events: none;
+}
+
+i.label {
+    user-select: none;
+    pointer-events: none;
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 300;
+}
+
+.active {
+    transform: translate(-250px, -26px);
+    font-size: 15px;
+    transition: 0.2s;
+}
+
+.not-active {
+    transform: translate(-220px, 5px);
+    transition: 0.2s;
+}
+
+input {
+    padding-left: 30px;
+    font-size: 20px;
+    width: 220px;
+    height: 30px;
+    border-radius: 3px;
+    background-color: var(--input);
+    outline: none;
+    border: none;
+    color: inherit;
+}
+
+.username {
+    padding-top: 20px;
+}
+
+.password {
+    padding-top: 40px;
+}
+
+.text {
+    color: var(--secondary-text)
+}
+
+button {
+    background-color: var(--button);
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+a {
+    color: var(--text);
+    text-decoration: none; 
+    position: absolute;
+    transform: translate(-290px, 75px);
+    font-size: 15px;
+}
