@@ -11,3 +11,47 @@
     --button: #575c5f;
     --warning: #e60000;
 }
+
+body {
+    background-color: var(--background);
+}
+
+input {
+    padding-left: 30px;
+    font-size: 20px;
+    width: 220px;
+    height: 30px;
+    border-radius: 3px;
+    background-color: var(--input);
+    outline: none;
+    border: none;
+    color: inherit;
+}
+
+button {
+    background-color: var(--button);
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+h1 {
+    color: var(--text);
+    font-size: 35px;
+    font-family: 'Ubuntu';
+}
+
+.hidden {
+    display: none;
+}
+
+p {
+    color: var(--text);
+    font-size: 20px;
+    font-family: 'Ubuntu';
+}
