@@ -1,0 +1,42 @@
+/* Top Nav Bar */
+
+nav.top ul {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--alternate-babkground);
+    list-style-type: none;
+    height: 50px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+
+nav.top li {
+    padding: 10px;
+    float: left;
+    font-size: 25px;
+    color: var(--text);
+    font-family: 'Ubuntu';
+}
+
+nav.top  #Account {
+    font-size: 20px;
+    background-color: var(--button);
+    padding: 3px;
+    border-radius: 5px;
+}
+
+.right {
+    float: right !important;
+}
+
+.center {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Side Nav Bar */

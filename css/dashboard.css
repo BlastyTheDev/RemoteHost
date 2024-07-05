@@ -1,0 +1,10 @@
+@import url(main.css);
+@import url(navbar.css);
+
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+
+ 
