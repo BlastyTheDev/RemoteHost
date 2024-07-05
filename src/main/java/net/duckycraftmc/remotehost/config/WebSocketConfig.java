@@ -12,16 +12,14 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
 
-    private final ConsoleWebSocketHandler consoleWebSocketHandler = new ConsoleWebSocketHandler();
-
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
-        registry.addHandler(consoleWebSocketHandler, "/api/v1/minecraft/console");
+        registry.addHandler(consoleWebSocketHandler(), "/api/v1/minecraft/console").setAllowedOrigins("*");
     }
 
     @Bean
     public ConsoleWebSocketHandler consoleWebSocketHandler() {
-        return consoleWebSocketHandler;
+        return new ConsoleWebSocketHandler();
     }
 
 }
