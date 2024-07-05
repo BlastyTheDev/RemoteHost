@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -23,6 +24,8 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 
     private final JWTService jwtService;
     private final UserDetailsService userDetailsService;
+
+    private final List<String> authenticatedSessionIds;
 
     @Override
     protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {
@@ -45,6 +48,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
+            authenticatedSessionIds.add(request.getSession().getId());
         }
 
         filterChain.doFilter(request, response);

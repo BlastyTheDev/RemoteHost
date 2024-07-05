@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -27,11 +29,13 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authManager;
 
+    private final HashMap<String, User> authenticatedSessionIds;
+
     @PostMapping("/login")
     public String login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
         authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
         User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow();
-        return sendNewToken(user);
+        return sendNewToken(user, request);
     }
 
     @PostMapping("/signup")
@@ -48,10 +52,11 @@ public class AuthController {
                 .tier(AccountTier.UNVERIFIED)
                 .build();
         response.setStatus(HttpServletResponse.SC_CREATED);
-        return sendNewToken(userRepository.save(user));
+        return sendNewToken(userRepository.save(user), request);
     }
 
-    private String sendNewToken(User user) {
+    private String sendNewToken(User user, HttpServletRequest request) {
+        authenticatedSessionIds.put(request.getSession().getId(), user);
         return jwtService.createToken(user);
     }
 

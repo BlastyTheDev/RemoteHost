@@ -1,6 +1,7 @@
 package net.duckycraftmc.remotehost.config;
 
 import lombok.RequiredArgsConstructor;
+import net.duckycraftmc.remotehost.api.v1.security.user.User;
 import net.duckycraftmc.remotehost.api.v1.security.user.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.HashMap;
 import java.util.List;
 
 @Configuration
@@ -23,6 +25,7 @@ import java.util.List;
 public class ApplicationConfig {
 
     private final UserRepository userRepository;
+    private final HashMap<String, User> authenticatedSessionIds = new HashMap<>();
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -46,6 +49,11 @@ public class ApplicationConfig {
     public UserDetailsService userDetailsService() {
         return username -> userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Bean
+    public HashMap<String, User> authenticatedSessionIds() {
+        return authenticatedSessionIds;
     }
 
     @Bean
