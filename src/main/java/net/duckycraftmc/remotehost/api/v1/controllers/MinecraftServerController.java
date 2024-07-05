@@ -13,10 +13,13 @@ import net.duckycraftmc.remotehost.util.DownloadServerJar;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
+import static net.duckycraftmc.remotehost.util.ValidationHelper.isUserOwnerOrCoOwner;
 
 @RestController
 @RequestMapping("/api/v1/minecraft")
@@ -25,6 +28,8 @@ public class MinecraftServerController {
 
     private final MinecraftServerRepository serverRepository;
     private final UserRepository userRepository;
+
+    private final ConsoleWebSocketHandler consoleWebSocketHandler;
 
     @Getter
     private final List<RunningMinecraftServer> servers = new ArrayList<>();
@@ -122,12 +127,12 @@ public class MinecraftServerController {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        if (!isUserOwnerOrCoOwner(user, server)) {
+        if (!isUserOwnerOrCoOwner(user, server, userRepository)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
-        servers.add(new RunningMinecraftServer(server).start());
+        servers.add(new RunningMinecraftServer(server, consoleWebSocketHandler).start());
     }
 
     @PostMapping("/send-command")
@@ -138,7 +143,7 @@ public class MinecraftServerController {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        if (!isUserOwnerOrCoOwner(user, server)) {
+        if (!isUserOwnerOrCoOwner(user, server, userRepository)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
@@ -160,7 +165,7 @@ public class MinecraftServerController {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        if (!isUserOwnerOrCoOwner(user, server)) {
+        if (!isUserOwnerOrCoOwner(user, server, userRepository)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
         }
@@ -173,10 +178,6 @@ public class MinecraftServerController {
 
         runningServer.stop();
         servers.remove(runningServer);
-    }
-
-    private boolean isUserOwnerOrCoOwner(User user, MinecraftServer server) {
-        return Objects.equals(server.getOwnerId(), user.getId()) || server.getCoOwners(userRepository).contains(user);
     }
 
 }

@@ -2,8 +2,11 @@ package net.duckycraftmc.remotehost.api.v1.minecraft;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.io.*;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class RunningMinecraftServer {
@@ -15,6 +18,8 @@ public class RunningMinecraftServer {
     private BufferedReader reader;
     private BufferedReader errorReader;
     private BufferedWriter writer;
+
+    private final ConsoleWebSocketHandler consoleWebSocketHandler;
 
     public RunningMinecraftServer start() throws IOException {
         ProcessBuilder pb = new ProcessBuilder("bash", "start.sh");
@@ -29,12 +34,14 @@ public class RunningMinecraftServer {
     }
 
     private void monitorConsole() {
-        // TODO: implement streaming to client, stop using System.out.println() when streaming is ready
+        // sends console output to all sessions watching this server's console
         new Thread(() -> {
             try {
                 String line;
                 while ((line = reader.readLine()) != null)
-                    System.out.println(line);
+                    for (WebSocketSession session : consoleWebSocketHandler.getMinecraftServerConsoleSessions().keySet())
+                        if (Objects.equals(consoleWebSocketHandler.getMinecraftServerConsoleSessions().get(session), server.getId()))
+                            session.sendMessage(new TextMessage(line));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -43,7 +50,9 @@ public class RunningMinecraftServer {
             try {
                 String line;
                 while ((line = errorReader.readLine()) != null)
-                    System.err.println(line);
+                    for (WebSocketSession session : consoleWebSocketHandler.getMinecraftServerConsoleSessions().keySet())
+                        if (Objects.equals(consoleWebSocketHandler.getMinecraftServerConsoleSessions().get(session), server.getId()))
+                            session.sendMessage(new TextMessage(line));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

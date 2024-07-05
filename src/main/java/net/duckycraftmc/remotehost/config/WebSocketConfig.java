@@ -2,7 +2,9 @@ package net.duckycraftmc.remotehost.config;
 
 import lombok.RequiredArgsConstructor;
 import net.duckycraftmc.remotehost.api.v1.minecraft.ConsoleWebSocketHandler;
+import net.duckycraftmc.remotehost.api.v1.minecraft.MinecraftServerRepository;
 import net.duckycraftmc.remotehost.api.v1.security.user.User;
+import net.duckycraftmc.remotehost.api.v1.security.user.UserRepository;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +20,8 @@ import java.util.HashMap;
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private final HashMap<String, User> authenticatedSessionIds;
+    private final UserRepository userRepository;
+    private final MinecraftServerRepository serverRepository;
 
     @Override
     public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
@@ -26,7 +30,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Bean
     public ConsoleWebSocketHandler consoleWebSocketHandler() {
-        return new ConsoleWebSocketHandler(authenticatedSessionIds);
+        return new ConsoleWebSocketHandler(authenticatedSessionIds, serverRepository, userRepository);
     }
 
 }
