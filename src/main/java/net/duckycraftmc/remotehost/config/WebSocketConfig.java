@@ -1,25 +1,27 @@
 package net.duckycraftmc.remotehost.config;
 
+import net.duckycraftmc.remotehost.api.v1.minecraft.ConsoleWebSocketHandler;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
-import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
-import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
 @Configuration
-@EnableWebSocketMessageBroker
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+@EnableWebSocket
+public class WebSocketConfig implements WebSocketConfigurer {
+
+    private final ConsoleWebSocketHandler consoleWebSocketHandler = new ConsoleWebSocketHandler();
 
     @Override
-    public void configureMessageBroker(@NotNull MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/ws");
-        registry.setApplicationDestinationPrefixes("/minecraft-console");
+    public void registerWebSocketHandlers(@NotNull WebSocketHandlerRegistry registry) {
+        registry.addHandler(consoleWebSocketHandler, "/api/v1/minecraft/console");
     }
 
-    @Override
-    public void registerStompEndpoints(@NotNull StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws/minecraft-console").setAllowedOrigins("*").withSockJS();
+    @Bean
+    public ConsoleWebSocketHandler consoleWebSocketHandler() {
+        return consoleWebSocketHandler;
     }
 
 }
