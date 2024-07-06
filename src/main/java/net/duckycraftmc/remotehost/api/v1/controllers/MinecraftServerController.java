@@ -14,10 +14,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
 import static net.duckycraftmc.remotehost.util.ValidationHelper.isUserOwnerOrCoOwner;
 
@@ -130,6 +133,18 @@ public class MinecraftServerController {
         if (!isUserOwnerOrCoOwner(user, server, userRepository)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return;
+        }
+
+        File propertiesFile = new File("servers/" + server.getId() + "/server.properties");
+        if (propertiesFile.exists()) {
+            Properties properties = new Properties();
+            properties.load(new FileInputStream(propertiesFile));
+            if (!Objects.equals(properties.getProperty("server-port"), String.valueOf(25565))
+                    && serverId != 1) {
+                int portIncrement = serverRepository.findAll().size();
+                properties.setProperty("server-port", String.valueOf(25565 + portIncrement));
+                properties.store(new FileOutputStream(propertiesFile), null);
+            }
         }
 
         servers.add(new RunningMinecraftServer(server, consoleWebSocketHandler).start());
