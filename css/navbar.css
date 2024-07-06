@@ -37,6 +37,48 @@ nav.top  #Account {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    cursor: default;
 }
 
 /* Side Nav Bar */
+
+nav.side ul {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--alternate-babkground);
+    list-style-type: none;
+    height: calc(100% - 50px);
+    width: 200px;
+    position: fixed;
+    top: 50px;
+    left: 0;
+}
+
+nav.side li {
+    padding: 10px;
+    font-size: 20px;
+    color: var(--secondary-text);
+    font-family: 'Ubuntu';
+}
+
+.selected {
+    background-color: var(--highlight);
+    border-left: var(--text) 5px solid;
+}
+
+nav.side li {
+    cursor: pointer;
+    border-bottom: 1px solid var(--secondary-background);
+    padding-left: 0px !important;
+    text-align: center;
+}
+
+#settings {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    border-top: 1px solid var(--secondary-background);
+}
+

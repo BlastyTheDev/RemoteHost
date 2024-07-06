@@ -6,5 +6,22 @@ body, html {
     padding: 0;
 }
 
+.YourServers {
+    margin-left: 50px;
+}
 
- 
+.MyAccount {
+    margin-left: 50px;
+}
+
+.MyAccount img {
+    border-radius: 10000000px;
+    width: 120px;
+    height: 120px;
+    float: left
+}
+
+.MyAccount p {
+    padding-left: 20px;
+    float: left;
+}
