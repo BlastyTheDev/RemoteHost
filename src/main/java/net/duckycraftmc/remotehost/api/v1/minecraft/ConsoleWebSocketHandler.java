@@ -62,6 +62,7 @@ public class ConsoleWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(@NotNull WebSocketSession session, @NotNull CloseStatus status) {
+        minecraftServerConsoleSessions.remove(session);
         authenticatedSessions.remove(session);
     }
 
