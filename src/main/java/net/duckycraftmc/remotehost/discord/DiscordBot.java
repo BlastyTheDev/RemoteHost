@@ -31,10 +31,13 @@ public class DiscordBot {
     private final Guild guild;
     private List<Member> members;
 
+    private final UserRepository userRepository;
+
     @Getter
     private final HashMap<String, Integer> verifyCodeMap = new HashMap<>();
 
     public DiscordBot(UserRepository userRepository) throws InterruptedException {
+        this.userRepository = userRepository;
         jda = JDABuilder.createDefault(Dotenv.load().get("DISCORD_BOT_TOKEN"))
                 .enableIntents(EnumSet.allOf(GatewayIntent.class))
                 .addEventListeners(new MessageReceivedListener(this, userRepository))
@@ -47,9 +50,15 @@ public class DiscordBot {
             Thread.sleep(1000);
     }
 
+    @GetMapping("/is-user-valid")
+    public Boolean isUserValid(@RequestParam String discord) {
+        return userRepository.findByUsername(discord.toLowerCase()).isEmpty() && members.stream().map(Member::getUser).anyMatch(user -> user.getName().equals(discord.toLowerCase()));
+    }
+
     @GetMapping("/member")
     public String getMember(@RequestParam(name = "u") String discordUsername, HttpServletResponse response) {
-        Member member = members.stream().filter(m -> m.getUser().getName().equals(discordUsername)).findFirst().orElse(null);
+        String finalDiscordUsername = discordUsername.toLowerCase();
+        Member member = members.stream().filter(m -> m.getUser().getName().equals(finalDiscordUsername)).findFirst().orElse(null);
         if (member == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return "Member not found";

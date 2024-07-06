@@ -9,6 +9,7 @@ import net.duckycraftmc.remotehost.api.v1.security.jwt.services.JWTService;
 import net.duckycraftmc.remotehost.api.v1.security.user.AccountTier;
 import net.duckycraftmc.remotehost.api.v1.security.user.User;
 import net.duckycraftmc.remotehost.api.v1.security.user.UserRepository;
+import net.duckycraftmc.remotehost.discord.DiscordBot;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +32,8 @@ public class AuthController {
 
     private final HashMap<String, User> authenticatedSessionIds;
 
+    private final DiscordBot discordBot;
+
     @PostMapping("/login")
     public String login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
         authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -42,12 +45,16 @@ public class AuthController {
     public String signup(@RequestBody SignupRequest signupRequest, HttpServletRequest request, HttpServletResponse response) {
         if (userRepository.findByUsername(signupRequest.getUsername()).isPresent()) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
-            return null;
+            return "username unavailable";
+        }
+        if (!discordBot.isUserValid(signupRequest.getDiscord())) {
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            return "discord unavailable";
         }
         User user = User.builder()
                 .username(signupRequest.getUsername())
                 .password(passwordEncoder.encode(signupRequest.getPassword()))
-                .discord(signupRequest.getDiscord())
+                .discord(signupRequest.getDiscord().toLowerCase())
                 .discordVerified(false)
                 .tier(AccountTier.UNVERIFIED)
                 .build();
