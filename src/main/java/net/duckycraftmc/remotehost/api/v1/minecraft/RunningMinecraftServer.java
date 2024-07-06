@@ -21,9 +21,11 @@ public class RunningMinecraftServer {
 
     private final ConsoleWebSocketHandler consoleWebSocketHandler;
 
-    public RunningMinecraftServer start() throws IOException {
+    public RunningMinecraftServer start() throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder("bash", "start.sh");
         pb.directory(new File("servers/" + server.getId()));
+        if (process != null && process.isAlive())
+            process.waitFor();
         process = pb.start();
         // for console input and output
         reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -59,13 +61,32 @@ public class RunningMinecraftServer {
         }).start();
     }
 
-    public void sendCommand(String command) throws IOException {
-        writer.write(command + "\n");
-        writer.flush();
+    public void sendCommand(String command) throws IOException, InterruptedException {
+        if (process == null || !process.isAlive())
+            return;
+        if (command.equalsIgnoreCase("restart"))
+            restart();
+        else {
+            writer.write(command + "\n");
+            writer.flush();
+        }
     }
 
-    public void stop() throws IOException {
+    public boolean stop() throws IOException, InterruptedException {
         sendCommand("stop");
+        process.waitFor();
+        return !process.isAlive();
+    }
+
+    // may keep world locked, unable to start server again
+    // avoid using the api endpoint related to this method
+    public void forceStop() {
+        process.destroy();
+    }
+
+    public void restart() throws IOException, InterruptedException {
+        stop();
+        start();
     }
 
 }

@@ -120,7 +120,7 @@ public class MinecraftServerController {
     }
 
     @PostMapping("/start")
-    public void startServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void startServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         MinecraftServer server = serverRepository.findById(serverId).orElse(null);
         if (server == null) {
@@ -136,7 +136,7 @@ public class MinecraftServerController {
     }
 
     @PostMapping("/send-command")
-    public void sendCommand(@RequestParam(name = "server") Integer serverId, @RequestBody String command, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void sendCommand(@RequestParam(name = "server") Integer serverId, @RequestBody String command, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         MinecraftServer server = serverRepository.findById(serverId).orElse(null);
         if (server == null) {
@@ -158,7 +158,7 @@ public class MinecraftServerController {
     }
 
     @PostMapping("/stop")
-    public void stopServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void stopServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         MinecraftServer server = serverRepository.findById(serverId).orElse(null);
         if (server == null) {
@@ -176,7 +176,55 @@ public class MinecraftServerController {
             return;
         }
 
-        runningServer.stop();
+        if (!runningServer.stop())
+            runningServer.forceStop();
+        servers.remove(runningServer);
+    }
+
+    @PostMapping("/restart")
+    public void restartServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
+        if (server == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        if (!isUserOwnerOrCoOwner(user, server, userRepository)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        RunningMinecraftServer runningServer = servers.stream().filter(s -> s.getServer().getId().equals(serverId)).findFirst().orElse(null);
+        if (runningServer == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        runningServer.restart();
+    }
+
+    // hopefully will never have to be used, admin only
+    @PostMapping("/force-stop")
+    public void forceStopServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) {
+//        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
+        if (server == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        // only admin accounts can force stop servers, validation not needed
+//        if (!isUserOwnerOrCoOwner(user, server, userRepository)) {
+//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+//            return;
+//        }
+
+        RunningMinecraftServer runningServer = servers.stream().filter(s -> s.getServer().getId().equals(serverId)).findFirst().orElse(null);
+        if (runningServer == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        runningServer.forceStop();
         servers.remove(runningServer);
     }
 

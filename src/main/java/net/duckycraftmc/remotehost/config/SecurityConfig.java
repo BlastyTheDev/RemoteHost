@@ -34,6 +34,7 @@ public class SecurityConfig {
     private final String[] needAdmin = {
             "/api/v1/admin/**",
             "/api/v1/minecraft/list-running",
+            "/api/v1/minecraft/force-stop",
     };
 
     @Bean
