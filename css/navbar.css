@@ -1,3 +1,12 @@
+nav {
+    user-select: none;
+    z-index: 1000;
+}
+
+.main {
+    z-index: 0;
+}
+
 /* Top Nav Bar */
 
 nav.top ul {
@@ -82,3 +91,27 @@ nav.side li {
     border-top: 1px solid var(--secondary-background);
 }
 
+/* Sub Nav */
+
+nav.subNav {
+    background-color: var(--secondary-alternate-background);
+    border-bottom: 1px solid var(--secondary-background);
+    position: fixed;
+}
+
+nav.subNav ul {
+    width: 150px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    list-style-type: none;
+    height: calc(100vh - 51px);
+    text-align: center;
+}
+
+nav.subNav li {
+    padding: 10px;
+    font-size: 18px;
+    color: var(--secondary-text);
+    font-family: 'Ubuntu';
+}

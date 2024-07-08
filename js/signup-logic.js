@@ -15,7 +15,7 @@ stage4 = document.getElementById('4');
 
 function updateStage() {
     if (stage > 5) {
-        window.location.href = 'login.html';
+        window.location.href = 'dashboard.html';
         return;
     }
 

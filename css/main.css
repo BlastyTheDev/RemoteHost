@@ -5,6 +5,7 @@
     --background: #222325;
     --secondary-background: #36383b;
     --alternate-babkground: #0f1011;
+    --secondary-alternate-background: #121314;
     --highlight: #5d6069;
     --text: #e1e1e1;
     --secondary-text: #cfcdcd;
@@ -26,7 +27,7 @@ input {
     background-color: var(--input);
     outline: none;
     border: none;
-    color: inherit;
+    color: var(--text);
 }
 
 button {

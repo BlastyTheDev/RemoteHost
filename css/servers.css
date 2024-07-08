@@ -1,0 +1,28 @@
+@import url("navbar.css");
+@import url("main.css");
+
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+.create {
+    margin-left: 50px;
+}
+
+.Defualt {
+    margin-left: 150px;
+}
+
+.YourServers {
+    margin-left: 50px;
+}
+
+.noServers {
+    margin-left: calc(50vw - 650px);
+    text-align: center;
+    background-color: var(--secondary-background);
+    padding: 10px;
+    border-radius: 10px;
+    width: 500px;
+}
