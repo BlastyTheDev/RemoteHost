@@ -1,8 +1,5 @@
 # RemoteHost (WIP)
 
-### (context for anyone from hackclub reading this)
-This is intended to be a backend to host Minecraft servers and an SQL database to manage accounts, etc.. The planning for this project concluded on 24 February 2024 and we have ever since forgotten about this until early June. The original planned completion day was 24 June this year
-
 ### How to Use (if you want to use it while it's in alpha)
 1. Clone the repository into your IDE (IntelliJ IDEA is used for this guide)
 2. Add maven to the project using the `Add Framework Support` option in the menu opened by double pressing shift
