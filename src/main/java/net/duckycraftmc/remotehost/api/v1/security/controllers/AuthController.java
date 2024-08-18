@@ -1,5 +1,6 @@
 package net.duckycraftmc.remotehost.api.v1.security.controllers;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -35,21 +36,21 @@ public class AuthController {
     private final DiscordBot discordBot;
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
+    public void login(@RequestBody LoginRequest loginRequest, HttpServletRequest request, HttpServletResponse response) {
         authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
         User user = userRepository.findByUsername(loginRequest.getUsername()).orElseThrow();
-        return sendNewToken(user, request);
+        sendNewToken(user, request, response);
     }
 
     @PostMapping("/signup")
-    public String signup(@RequestBody SignupRequest signupRequest, HttpServletRequest request, HttpServletResponse response) {
+    public void signup(@RequestBody SignupRequest signupRequest, HttpServletRequest request, HttpServletResponse response) {
         if (userRepository.findByUsername(signupRequest.getUsername()).isPresent()) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
-            return "username unavailable";
+            return;
         }
         if (!discordBot.isUserValid(signupRequest.getDiscord())) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
-            return "discord unavailable";
+            return;
         }
         User user = User.builder()
                 .username(signupRequest.getUsername())
@@ -59,12 +60,14 @@ public class AuthController {
                 .tier(AccountTier.UNVERIFIED)
                 .build();
         response.setStatus(HttpServletResponse.SC_CREATED);
-        return sendNewToken(userRepository.save(user), request);
+        sendNewToken(userRepository.save(user), request, response);
     }
 
-    private String sendNewToken(User user, HttpServletRequest request) {
+    private void sendNewToken(User user, HttpServletRequest request, HttpServletResponse response) {
         authenticatedSessionIds.put(request.getSession().getId(), user);
-        return jwtService.createToken(user);
+        var tokenCookie = new Cookie("token", jwtService.createToken(user));
+        tokenCookie.setAttribute("SameSite", "Strict");
+        response.addCookie(tokenCookie);
     }
 
 }

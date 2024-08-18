@@ -1,5 +1,6 @@
 package net.duckycraftmc.remotehost.config;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
 import net.duckycraftmc.remotehost.api.v1.security.user.User;
 import net.duckycraftmc.remotehost.api.v1.security.user.UserRepository;
@@ -13,16 +14,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.HashMap;
-import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
-public class ApplicationConfig {
+public class ApplicationConfig implements WebMvcConfigurer {
 
     private final UserRepository userRepository;
     private final HashMap<String, User> authenticatedSessionIds = new HashMap<>();
@@ -56,15 +55,13 @@ public class ApplicationConfig {
         return authenticatedSessionIds;
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("*"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins(Dotenv.load().get("FRONTEND_URL"))
+                .allowedHeaders("*")
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE")
+                .allowCredentials(true);
     }
 
 }

@@ -2,6 +2,7 @@ package net.duckycraftmc.remotehost.api.v1.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +30,25 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {
-        String header = request.getHeader("Authorization");
-        if (header == null || !header.startsWith("Bearer ")) {
+        Cookie tokenCookie = null;
+
+        if (request.getCookies() == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String jwt = header.split(" ")[1].trim();
+        for (var cookie : request.getCookies())
+            if (cookie.getName().equals("token")) {
+                tokenCookie = cookie;
+                break;
+            }
+
+        if (tokenCookie == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String jwt = tokenCookie.getValue();
         String username = jwtService.getSubject(jwt);
 
         if (!(username != null && SecurityContextHolder.getContext().getAuthentication() == null)) {
@@ -48,6 +61,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
+
             authenticatedSessionIds.add(request.getSession().getId());
         }
 
