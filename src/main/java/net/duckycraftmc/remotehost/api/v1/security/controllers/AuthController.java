@@ -67,6 +67,7 @@ public class AuthController {
         authenticatedSessionIds.put(request.getSession().getId(), user);
         var tokenCookie = new Cookie("token", jwtService.createToken(user));
         tokenCookie.setAttribute("SameSite", "Strict");
+        tokenCookie.setPath("/");
         response.addCookie(tokenCookie);
     }
 
