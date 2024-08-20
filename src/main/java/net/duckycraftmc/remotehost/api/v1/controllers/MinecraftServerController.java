@@ -1,6 +1,5 @@
 package net.duckycraftmc.remotehost.api.v1.controllers;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +45,7 @@ public class MinecraftServerController {
     }
 
     @PostMapping("/create")
-    public MinecraftServer createServer(@RequestBody CreateRequest createRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
+    public MinecraftServer createServer(@RequestBody CreateRequest createRequest, HttpServletResponse response) throws IOException, InterruptedException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (user.getTier() == AccountTier.UNVERIFIED) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -121,20 +120,44 @@ public class MinecraftServerController {
 
         return server;
     }
-
-    @PostMapping("/start")
-    public void startServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
+    
+    private boolean isUserNotAuthenticated(MinecraftServer server, User user, HttpServletResponse response) {
         if (server == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
+            return true;
         }
         if (!isUserOwnerOrCoOwner(user, server, userRepository)) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return;
+            return true;
         }
+        return false;
+    }
+    
+    private RunningMinecraftServer getRunningMinecraftServerCheckingAuthentication(Integer serverId, HttpServletResponse response) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
 
+        if (isUserNotAuthenticated(server, user, response))
+            return null;
+
+        RunningMinecraftServer runningServer = servers.stream().filter(s -> s.getServer().getId().equals(serverId)).findFirst().orElse(null);
+        if (runningServer == null) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
+        
+        return runningServer;
+    }
+
+    @PostMapping("/start")
+    public void startServer(@RequestParam(name = "server") Integer serverId, HttpServletResponse response) throws IOException, InterruptedException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
+        
+        if (isUserNotAuthenticated(server, user, response))
+            return;
+
+        assert server != null;
         File propertiesFile = new File("servers/" + server.getId() + "/server.properties");
         if (propertiesFile.exists()) {
             Properties properties = new Properties();
@@ -151,45 +174,21 @@ public class MinecraftServerController {
     }
 
     @PostMapping("/send-command")
-    public void sendCommand(@RequestParam(name = "server") Integer serverId, @RequestBody String command, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
-        if (server == null) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-        if (!isUserOwnerOrCoOwner(user, server, userRepository)) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
+    public void sendCommand(@RequestParam(name = "server") Integer serverId, @RequestBody String command, HttpServletResponse response) throws IOException, InterruptedException {
+        var runningServer = getRunningMinecraftServerCheckingAuthentication(serverId, response);
 
-        RunningMinecraftServer runningServer = servers.stream().filter(s -> s.getServer().getId().equals(serverId)).findFirst().orElse(null);
-        if (runningServer == null) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        if (runningServer == null)
             return;
-        }
-
+        
         runningServer.sendCommand(command);
     }
 
     @PostMapping("/stop")
-    public void stopServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
-        if (server == null) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+    public void stopServer(@RequestParam(name = "server") Integer serverId, HttpServletResponse response) throws IOException, InterruptedException {
+        var runningServer = getRunningMinecraftServerCheckingAuthentication(serverId, response);
+        
+        if (runningServer == null)
             return;
-        }
-        if (!isUserOwnerOrCoOwner(user, server, userRepository)) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-
-        RunningMinecraftServer runningServer = servers.stream().filter(s -> s.getServer().getId().equals(serverId)).findFirst().orElse(null);
-        if (runningServer == null) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
 
         if (!runningServer.stop())
             runningServer.forceStop();
@@ -197,7 +196,7 @@ public class MinecraftServerController {
     }
 
     @PostMapping("/restart")
-    public void restartServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
+    public void restartServer(@RequestParam(name = "server") Integer serverId, HttpServletResponse response) throws IOException, InterruptedException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         MinecraftServer server = serverRepository.findById(serverId).orElse(null);
         if (server == null) {
@@ -220,18 +219,12 @@ public class MinecraftServerController {
 
     // hopefully will never have to be used, admin only
     @PostMapping("/force-stop")
-    public void forceStopServer(@RequestParam(name = "server") Integer serverId, HttpServletRequest request, HttpServletResponse response) {
-//        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public void forceStopServer(@RequestParam(name = "server") Integer serverId, HttpServletResponse response) {
         MinecraftServer server = serverRepository.findById(serverId).orElse(null);
         if (server == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        // only admin accounts can force stop servers, validation not needed
-//        if (!isUserOwnerOrCoOwner(user, server, userRepository)) {
-//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//            return;
-//        }
 
         RunningMinecraftServer runningServer = servers.stream().filter(s -> s.getServer().getId().equals(serverId)).findFirst().orElse(null);
         if (runningServer == null) {
@@ -241,6 +234,23 @@ public class MinecraftServerController {
 
         runningServer.forceStop();
         servers.remove(runningServer);
+    }
+    
+    @GetMapping("/get-server-info")
+    public MinecraftServer getServerInfo(@RequestParam(name = "server") Integer serverId, HttpServletResponse response) {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
+        
+        if (isUserNotAuthenticated(server, user, response))
+            return null;
+        
+        return server;
+    }
+    
+    @GetMapping("/get-owned-servers")
+    public List<MinecraftServer> getOwnedServers() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return serverRepository.findAllByOwnerId(user.getId());
     }
 
 }
