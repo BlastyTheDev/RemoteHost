@@ -29,6 +29,7 @@ public class SecurityConfig {
             "/api/v1/account/add-key",
             "/api/v1/minecraft",
             "/api/v1/minecraft/**",
+            "/api/v1/ws/minecraft/console",
     };
 
     private final String[] needAdmin = {

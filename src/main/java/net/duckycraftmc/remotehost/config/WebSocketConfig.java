@@ -3,6 +3,7 @@ package net.duckycraftmc.remotehost.config;
 import lombok.RequiredArgsConstructor;
 import net.duckycraftmc.remotehost.api.v1.minecraft.ConsoleWebSocketHandler;
 import net.duckycraftmc.remotehost.api.v1.minecraft.MinecraftServerRepository;
+import net.duckycraftmc.remotehost.api.v1.security.jwt.services.JWTService;
 import net.duckycraftmc.remotehost.api.v1.security.user.User;
 import net.duckycraftmc.remotehost.api.v1.security.user.UserRepository;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +20,8 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketConfigurer {
 
-    private final HashMap<String, User> authenticatedSessionIds;
+    private final JWTService jwtService;
+    
     private final UserRepository userRepository;
     private final MinecraftServerRepository serverRepository;
 
@@ -30,7 +32,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Bean
     public ConsoleWebSocketHandler consoleWebSocketHandler() {
-        return new ConsoleWebSocketHandler(authenticatedSessionIds, serverRepository, userRepository);
+        return new ConsoleWebSocketHandler(jwtService, serverRepository, userRepository);
     }
 
 }
