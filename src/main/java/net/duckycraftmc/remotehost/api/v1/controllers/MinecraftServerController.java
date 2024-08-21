@@ -1,5 +1,6 @@
 package net.duckycraftmc.remotehost.api.v1.controllers;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -120,7 +121,7 @@ public class MinecraftServerController {
 
         return server;
     }
-    
+
     private boolean isUserNotAuthenticated(MinecraftServer server, User user, HttpServletResponse response) {
         if (server == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -132,7 +133,7 @@ public class MinecraftServerController {
         }
         return false;
     }
-    
+
     private RunningMinecraftServer getRunningMinecraftServerCheckingAuthentication(Integer serverId, HttpServletResponse response) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         MinecraftServer server = serverRepository.findById(serverId).orElse(null);
@@ -145,7 +146,7 @@ public class MinecraftServerController {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return null;
         }
-        
+
         return runningServer;
     }
 
@@ -153,7 +154,7 @@ public class MinecraftServerController {
     public void startServer(@RequestParam(name = "server") Integer serverId, HttpServletResponse response) throws IOException, InterruptedException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         MinecraftServer server = serverRepository.findById(serverId).orElse(null);
-        
+
         if (isUserNotAuthenticated(server, user, response))
             return;
 
@@ -179,20 +180,20 @@ public class MinecraftServerController {
 
         if (runningServer == null)
             return;
-        
+
         runningServer.sendCommand(command);
     }
 
     @PostMapping("/stop")
     public void stopServer(@RequestParam(name = "server") Integer serverId, HttpServletResponse response) throws IOException, InterruptedException {
         var runningServer = getRunningMinecraftServerCheckingAuthentication(serverId, response);
-        
+
         if (runningServer == null)
             return;
 
         if (!runningServer.stop())
             runningServer.forceStop();
-        servers.remove(runningServer);
+        servers.remove(runningServer); // TODO: this line doesnt run for some reason?
     }
 
     @PostMapping("/restart")
@@ -235,22 +236,68 @@ public class MinecraftServerController {
         runningServer.forceStop();
         servers.remove(runningServer);
     }
-    
+
     @GetMapping("/get-server-info")
     public MinecraftServer getServerInfo(@RequestParam(name = "server") Integer serverId, HttpServletResponse response) {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         MinecraftServer server = serverRepository.findById(serverId).orElse(null);
-        
+
         if (isUserNotAuthenticated(server, user, response))
             return null;
-        
+
         return server;
     }
-    
+
     @GetMapping("/get-owned-servers")
-    public List<MinecraftServer> getOwnedServers() {
+    public List<MinecraftServerInfo> getOwnedServers() throws IOException, InterruptedException {
         User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return serverRepository.findAllByOwnerId(user.getId());
+        var userServers = serverRepository.findAllByOwnerId(user.getId());
+
+        var serverInfos = new ArrayList<MinecraftServerInfo>();
+
+        for (var server : userServers) {
+            var serverInfo = new MinecraftServerInfo();
+            serverInfo.setId(server.getId());
+            serverInfo.setName(server.getName());
+            serverInfo.setAddress(user.getUsername() + Dotenv.load().get("SERVER_ADDRESS"));
+            
+            boolean serverOnline = servers.stream().anyMatch(s -> s.getServer().getId().equals(server.getId()));
+            RunningMinecraftServer runningServer = serverOnline
+                    ? servers.stream().filter(s -> s.getServer().getId().equals(server.getId())).findFirst().orElse(null)
+                    : null;
+            
+            serverInfo.setStatus(serverOnline && runningServer != null ? "Online" : "Offline");
+            // getMaxPlayers and getOnlinePlayers block the console reading thread
+            serverInfo.setMaxPlayers(/*serverOnline && runningServer != null ? runningServer.getMaxPlayers() : */0);
+            serverInfo.setPlayersOnline(/*serverOnline && runningServer != null ? runningServer.getOnlinePlayers() : */0);
+            
+            serverInfos.add(serverInfo);
+        }
+
+        return serverInfos;
+    }
+
+    @GetMapping("/get-server-icon")
+    public byte[] getServerIcon(@RequestParam(name = "server") Integer serverId, HttpServletResponse response) throws IOException {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        MinecraftServer server = serverRepository.findById(serverId).orElse(null);
+
+        if (isUserNotAuthenticated(server, user, response))
+            return null;
+
+        assert server != null;
+        File icon = new File("servers/" + server.getId() + "/server-icon.png");
+        if (!icon.exists()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
+
+        byte[] bytes = new byte[(int) icon.length()];
+        FileInputStream fis = new FileInputStream(icon);
+        fis.read(bytes);
+        fis.close();
+
+        return bytes;
     }
 
 }

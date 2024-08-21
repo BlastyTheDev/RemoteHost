@@ -71,8 +71,6 @@ public class ConsoleWebSocketHandler extends TextWebSocketHandler {
                 return;
 
             minecraftServerConsoleSessions.put(session, serverId);
-            
-            session.sendMessage(new TextMessage("::set-server " + server.getName()));
         }
     }
 

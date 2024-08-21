@@ -7,6 +7,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.io.*;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RequiredArgsConstructor
 public class RunningMinecraftServer {
@@ -71,7 +72,7 @@ public class RunningMinecraftServer {
             writer.flush();
         }
     }
-
+    
     public boolean stop() throws IOException, InterruptedException {
         sendCommand("stop");
         process.waitFor();
@@ -87,6 +88,50 @@ public class RunningMinecraftServer {
     public void restart() throws IOException, InterruptedException {
         stop();
         start();
+    }
+
+    private synchronized String getListPlayers() throws IOException, InterruptedException {
+        sendCommand("list");
+
+        AtomicReference<String> line = new AtomicReference<>();
+        
+//        new Thread(() -> {
+//            while (true) {
+//                try {
+//                    if (reader.readLine() == null)
+//                        break;
+//                    
+//                    line.set(reader.readLine());
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//                
+//                if (line.get().substring(17).startsWith("There are ")) {
+//                    line.set(line.get().substring(17));
+//                    System.out.println(line.get());
+//                }
+//            }
+//        }).start();
+
+        return line.get();
+    }
+
+    public Integer getOnlinePlayers() throws IOException, InterruptedException {
+        var listPlayersResult = getListPlayers();
+
+        if (listPlayersResult == null)
+            return 0;
+
+        return Integer.parseInt(listPlayersResult.split(" ")[2].split("/")[0]);
+    }
+
+    public Integer getMaxPlayers() throws IOException, InterruptedException {
+        var listPlayersResult = getListPlayers();
+
+        if (listPlayersResult == null)
+            return 0;
+
+        return Integer.parseInt(listPlayersResult.split(" ")[2].split("/")[1]);
     }
 
 }
